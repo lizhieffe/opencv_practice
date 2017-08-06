@@ -25,6 +25,9 @@ int main(int argc, char* argv[]) {
 
   std::cout << "Camera is initiated." << std::endl;
 
+  std::cout << "======================================" << std::endl;
+  std::cout << "Press ESC to exit." << std::endl;
+
   while (true) {
     // Grab the next camera frame.
     cv::Mat camera_frame;
@@ -38,7 +41,8 @@ int main(int argc, char* argv[]) {
     // Create a blank output image, that we will draw onto.
     cv::Mat displayed_frame(camera_frame.size(), CV_8UC3);
     // Run the cartoonifier filter on the camera frame.
-    cartoon::CartoonifyImage(camera_frame, &displayed_frame);
+    cartoon::CartoonifyImage(camera_frame, cartoon::CartoonMode::EVIL,
+                             &displayed_frame);
 
     // Display the processed image onto the screen.
     imshow("Cartoonifier", displayed_frame);

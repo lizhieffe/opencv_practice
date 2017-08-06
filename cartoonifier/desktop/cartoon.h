@@ -2,6 +2,11 @@
 
 namespace cartoon {
 
-void CartoonifyImage(const cv::Mat& input, cv::Mat* output);
+enum class CartoonMode {
+  SKETCH,
+  EVIL,
+};
+
+void CartoonifyImage(const cv::Mat& input, CartoonMode mode, cv::Mat* output);
 
 }  // namespace cartoon

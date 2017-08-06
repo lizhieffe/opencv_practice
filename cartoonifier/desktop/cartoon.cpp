@@ -5,9 +5,18 @@ namespace cartoon {
 using namespace cv;
 
 Mat PopulateMaskForSketchMode(const Mat& input);
+Mat PopulateMaskForEvilMode(const Mat& input);
 
-void CartoonifyImage(const cv::Mat& input, cv::Mat* output) {
-  Mat mask = PopulateMaskForSketchMode(input);
+void CartoonifyImage(const cv::Mat& input, CartoonMode mode, cv::Mat* output) {
+  Mat mask;
+  switch (mode) {
+    case CartoonMode::SKETCH:
+      mask = PopulateMaskForSketchMode(input);
+      break;
+    case CartoonMode::EVIL:
+      mask = PopulateMaskForEvilMode(input);
+      break;
+  }
 
   // Reduce the image resolution because the next filter to be used (bilateral
   // filter) is slow.
@@ -54,6 +63,29 @@ Mat PopulateMaskForSketchMode(const Mat& input) {
   Mat mask;
   const int EDGES_THRESHOLD = 80;
   threshold(edges, mask, EDGES_THRESHOLD, 255, THRESH_BINARY_INV);
+
+  return mask;
+}
+
+Mat PopulateMaskForEvilMode(const Mat& input) {
+  // Convert from BGR color to Grayscle.
+  Mat gray;
+  cvtColor(input, gray, CV_BGR2GRAY);
+
+  // Remove the pixel noise with a good Median filter, before we start detecting
+  // edges.
+  const int MEDIAN_BLUR_FILTER_SIZE = 7;
+  medianBlur(gray, gray, MEDIAN_BLUR_FILTER_SIZE);
+  
+  Mat edges, edges2;
+  Scharr(gray, edges, CV_8U, 1, 0);
+  Scharr(gray, edges2, CV_8U, 1, 0, -1);
+  edges += edges2; // Combine the x & y edges together.
+
+  Mat mask;
+  const int EVIL_EDGE_THRESHOLD = 12;
+  threshold(edges, mask, EVIL_EDGE_THRESHOLD, 255, THRESH_BINARY_INV);
+  medianBlur(mask, mask, 3);
 
   return mask;
 }
